@@ -34,6 +34,9 @@ echo Create a `assoc` between extensions in %list% with `txtfile`
    assoc .%%a=txtfile
 ))
 
+:: Associate files with no extensions
+assoc .=txtfile
+
 echo:
 echo `assoc` set for each extension, lets check `assoc`:
 assoc | findstr ".txt"
