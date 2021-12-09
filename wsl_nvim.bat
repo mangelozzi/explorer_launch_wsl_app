@@ -42,7 +42,15 @@ set pp=%pp:;=\;%
 :: full wt.exe path: %LOCALAPPDATA%\Microsoft\WindowsApps\wt.exe
 :: GIANT GOTCHA! Can only strip outter double quotes from %pp% if placing within
 :: double quotes, else special chars will be interpretted literally, e.g. ^ will escape.
-set launch="p=$(wslpath '%pp:"=%') && cd \\"^""$(dirname \\"^""$p\\"^"")\\"^"" && %my_app% \\"^""$p\\"^""
+:: Another GOTCHA! regarding the order of parameter expansion / sub-shell execution:
+:: To use parameter expansion for the $p variable, the $ must be escaped using a backslash \$
+:: because the command is passed to bash via -c and hence would otherwise perform the expansion too early
+:: in the context of the shell that is executing the "bash -c" command instead of passing it through
+:: to the actual sub-shell. This resulted in $p being empty as it is only defined *inside* the sub-shell.
+:: This is also true for the $(dirname "\$p") sub-shell call which must be escaped as \$() to avoid it being
+:: executed before its argument "\$p" got expanded which would result in it outputting a dot, because it
+:: would consume the literal string "\$p" as an argument, which is not a path.
+set launch="p=$(wslpath '%pp:"=%') && cd \\"^""\$(dirname \\"^""\$p\\"^"")\\"^"" && %my_app% \\"^""\$p\\"^""
 
 :: Use `start` to launch cmd and cleanup/close the parent process immediately.
 :: bash -i starts bash interactively.
